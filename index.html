@@ -77,18 +77,18 @@
 
   <main class="container">
     <!-- ===== ช่องค้นหาคำ (อังกฤษหรือไทย) ===== -->
-    <section class="search">
+    <section class="search learn-only">
       <input id="searchInput" type="search" placeholder="🔍 ค้นหาคำ (อังกฤษหรือไทย)" autocomplete="off">
       <div id="searchResults" class="search-results hidden"></div>
     </section>
 
     <!-- ===== เป้าหมายรายวัน ===== -->
-    <section id="goalBox" class="goal-box"></section>
+    <section id="goalBox" class="goal-box learn-only"></section>
 
-    <!-- ===== เลือกโหมด: เรียนคำใหม่ / ทวน ===== -->
-    <section class="modes">
-      <button id="modeLearn" class="mode-btn active">📖 เรียนคำใหม่</button>
-      <button id="modeReview" class="mode-btn">🔁 ทวนคำที่จำไม่ได้</button>
+    <!-- ===== หัวหน้าโหมดทวน (แสดงเฉพาะตอนอยู่หน้าทวน) ===== -->
+    <section id="reviewHeader" class="review-header review-only">
+      <button id="backToLearn" type="button" class="btn small">← กลับไปเรียนคำใหม่</button>
+      <b>🔁 ทวนคำที่จำไม่ได้</b>
     </section>
 
     <!-- ===== ปุ่มเลือกระดับ ===== -->
@@ -98,11 +98,12 @@
       <button class="level-btn" data-level="A2">A2</button>
       <button class="level-btn" data-level="B1">B1</button>
       <button class="level-btn" data-level="B2">B2</button>
+      <!-- ปุ่มเข้าหน้าทวน -->
+      <button id="reviewPill" type="button" class="review-pill learn-only">🔁 ทวน</button>
     </section>
 
-    <!-- ===== ตัวเลือกอื่นๆ ===== -->
+    <!-- ===== ตัวเลือกเสียง ===== -->
     <section class="options">
-      <button id="shuffleBtn" class="btn small">🔀 สุ่มลำดับ</button>
       <label>สำเนียง
         <select id="accentSelect">
           <option value="en-US">อเมริกัน (en-US)</option>
@@ -158,7 +159,7 @@
     </section>
 
     <!-- ===== สถิติ ===== -->
-    <section class="stats">
+    <section class="stats learn-only">
       <h3>สถิติการจำ</h3>
       <div id="statsList"></div>
       <p class="legend"><span class="dot known"></span>จำได้แล้ว <span class="dot learning"></span>ยังจำไม่ได้ <span class="dot new"></span>ยังไม่เปิด</p>
@@ -166,7 +167,7 @@
     </section>
 
     <!-- ===== ลิสต์คำ ===== -->
-    <section class="stats lists">
+    <section class="stats lists learn-only">
       <h3>ลิสต์คำ</h3>
       <div class="list-tabs">
         <button id="tabKnown" class="mode-btn active">✅ จำได้แล้ว</button>

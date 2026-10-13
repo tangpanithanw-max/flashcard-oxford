@@ -68,7 +68,7 @@ let modeBeforeSearch = "learn";
 let selectedLevel = "ALL";
 let deck = [];        // รายการคำที่กำลังแสดงอยู่ (หลังกรองแล้ว)
 let index = 0;        // ตำแหน่งการ์ดปัจจุบันใน deck
-let shuffled = false;
+let shuffled = true;  // สุ่มลำดับการ์ดเสมอ
 let round = null;     // สรุปรอบทวน { total, known, again }
 let history = [];     // ประวัติการกด ไว้ใช้ปุ่ม "เลิกทำล่าสุด" (เก็บ 20 ครั้งล่าสุด)
 
@@ -101,7 +101,7 @@ const el = {
   accent: $("accentSelect"), speed: $("speedSelect"),
   voiceNotice: $("voiceNotice"), stats: $("statsList"), sync: $("syncStatus"),
   userLabel: $("userLabel"), logoutBtn: $("logoutBtn"), streak: $("streakBadge"),
-  modeLearn: $("modeLearn"), modeReview: $("modeReview"), banner: $("modeBanner"),
+  reviewPill: $("reviewPill"), banner: $("modeBanner"),
   undo: $("undoBtn"), search: $("searchInput"), searchResults: $("searchResults"),
   goalBox: $("goalBox"), goalModal: $("goalModal"), goalForm: $("goalForm"),
   goalRows: $("goalRows"), goalFormMsg: $("goalFormMsg"),
@@ -159,8 +159,10 @@ function shuffleArray(arr) {
 function setMode(m) {
   mode = m;
   history = [];
-  el.modeLearn.classList.toggle("active", m === "learn");
-  el.modeReview.classList.toggle("active", m === "review");
+  // หน้าทวนเป็นอีกหน้า: ซ่อนส่วนของหน้าเรียนคำใหม่ (ค้นหา เป้าหมาย สถิติ ลิสต์)
+  const wasReview = el.appScreen.classList.contains("reviewing");
+  el.appScreen.classList.toggle("reviewing", m === "review");
+  if (wasReview !== (m === "review")) window.scrollTo(0, 0);
   buildDeck();
 }
 
@@ -186,7 +188,7 @@ function render() {
   // แถบบอกโหมดตอนดูคำที่ค้นหา
   el.banner.classList.toggle("hidden", mode !== "search");
   if (mode === "search") {
-    el.banner.textContent = "กำลังดูคำที่ค้นหา · กดจำได้/ยังไม่จำ หรือเลือกโหมดด้านบนเพื่อกลับไปเล่นต่อ";
+    el.banner.textContent = "กำลังดูคำที่ค้นหา · กดจำได้/ยังไม่จำ หรือกดเลือกระดับด้านบนเพื่อกลับไปเล่นต่อ";
   }
 
   if (hasCards) {
@@ -203,13 +205,13 @@ function render() {
     el.statusTag.className = "status-tag" + (st !== "new" ? " " + st : "");
     el.statusTag.textContent = st === "known" ? "จำได้แล้ว" : st === "learning" ? "ยังจำไม่ได้" : "";
     const label = mode === "review" ? "ทวน" : mode === "search" ? "คำที่ค้นหา" : "คำใหม่";
-    el.counter.textContent = `${label} ${index + 1} / ${deck.length}` + (shuffled ? " (สุ่ม)" : "");
+    el.counter.textContent = `${label} ${index + 1} / ${deck.length}`;
   } else {
     el.counter.textContent = "";
     renderEmpty();
   }
   const c = computeCounts();
-  el.modeReview.textContent = `🔁 ทวนคำที่จำไม่ได้ (${c[selectedLevel].learning})`;
+  el.reviewPill.textContent = `🔁 ทวน (${c.ALL.learning})`;
   renderStats(c);
   renderGoal();
   renderList(c);
@@ -556,8 +558,6 @@ function showSearchCard(w) {
   index = 0;
   el.search.value = "";
   el.searchResults.classList.add("hidden");
-  el.modeLearn.classList.remove("active");
-  el.modeReview.classList.remove("active");
   render();
   el.card.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -977,14 +977,8 @@ $("nextBtn").onclick = next;
 $("prevBtn").onclick = prev;
 el.undo.onclick = undo;
 
-$("shuffleBtn").onclick = () => {
-  shuffled = true;
-  if (mode === "search") mode = modeBeforeSearch;
-  setMode(mode);
-};
-
-el.modeLearn.onclick = () => setMode("learn");
-el.modeReview.onclick = () => setMode("review");
+el.reviewPill.onclick = () => setMode("review");
+$("backToLearn").onclick = () => setMode("learn");
 
 document.querySelectorAll("#levelButtons .level-btn").forEach((btn) => {
   btn.onclick = () => setLevel(btn.dataset.level);
