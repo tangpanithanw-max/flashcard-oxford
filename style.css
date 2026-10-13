@@ -178,9 +178,116 @@ button, input, select { font-family: inherit; }
 .stats h3 { margin-top: 0; }
 .stat-row { margin-bottom: 10px; }
 .stat-label { display: flex; justify-content: space-between; gap: 8px; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-.bar { height: 10px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.bar { height: 10px; background: var(--track); border-radius: 999px; overflow: hidden; display: flex; }
 .bar-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
+.bar-fill.known { background: var(--green); }
+.bar-fill.learning { background: var(--red); }
+.stat-detail { font-size: 0.82rem; color: var(--muted); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.legend { font-size: 0.82rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; }
+.dot.known { background: var(--green); }
+.dot.learning { background: var(--red); }
+.dot.new { background: var(--track); border: 1px solid var(--border); }
 .sync-status { color: var(--muted); font-size: 0.85rem; margin-bottom: 0; }
+
+/* ===== วันที่เล่นติดกัน ===== */
+.streak {
+  font-size: 0.85rem; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: var(--surface-2); color: var(--notice-text); font-variant-numeric: tabular-nums;
+}
+.streak.off { opacity: 0.6; }
+
+/* ===== ค้นหา ===== */
+.search { position: relative; margin-bottom: 12px; }
+.search input {
+  width: 100%; padding: 10px 12px; font-size: 1rem; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+}
+.search input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+.search-results {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--shadow); max-height: 320px; overflow-y: auto;
+}
+.search-hit {
+  display: grid; grid-template-columns: 1fr auto; gap: 0 8px; width: 100%; text-align: left;
+  padding: 8px 12px; border: none; border-bottom: 1px solid var(--border);
+  background: none; color: var(--text); cursor: pointer; font-size: 0.95rem;
+}
+.search-hit:hover, .search-hit:focus-visible { background: var(--surface-2); outline: none; }
+.search-hit .sw { font-weight: 600; }
+.search-hit .sl { font-size: 0.8rem; color: var(--muted); }
+.search-hit .sm { grid-column: 1 / -1; color: var(--muted); font-size: 0.88rem; }
+.search-none { margin: 0; padding: 10px 12px; color: var(--muted); }
+
+/* ===== เป้าหมาย ===== */
+.goal-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.goal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.goal-time { font-size: 0.82rem; color: var(--muted); }
+.goal-row { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.goal-lv { font-weight: 600; font-size: 0.9rem; }
+.goal-num { font-size: 0.88rem; min-width: 52px; text-align: right; }
+.goal-buttons { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* ===== โหมด / แท็บ ===== */
+.modes, .list-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.mode-btn {
+  flex: 1; padding: 10px 8px; border-radius: 12px; cursor: pointer; font-size: 0.95rem;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+}
+.mode-btn.active { background: var(--surface-2); border-color: var(--primary); color: var(--text); font-weight: 600; }
+.mode-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.levels.small .level-btn { padding: 6px; font-size: 0.85rem; }
+
+.undo { display: block; margin: 10px auto 0; }
+.undo:disabled { color: var(--muted); text-decoration: none; cursor: default; opacity: 0.6; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty p { margin: 0; }
+
+/* ===== ลิสต์คำ ===== */
+.list-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.list-count { color: var(--muted); font-size: 0.9rem; margin-right: auto; font-variant-numeric: tabular-nums; }
+.word-list { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; }
+.list-row {
+  display: grid; grid-template-columns: auto minmax(80px, 1fr) 2fr auto; align-items: center; gap: 8px;
+  padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.92rem;
+}
+div.list-row { grid-template-columns: minmax(80px, 1fr) 2fr auto; }
+label.list-row { cursor: pointer; }
+.list-row input { accent-color: var(--primary); width: 18px; height: 18px; }
+.list-row .lw { font-weight: 600; word-break: break-word; }
+.list-row .lm { color: var(--muted); }
+.list-row .ll { font-size: 0.78rem; color: var(--muted); }
+.list-empty { margin: 0; padding: 16px; text-align: center; color: var(--muted); }
+
+/* ===== หน้าต่างลอย (ตั้งเป้าหมาย / บรรลุเป้าหมาย) ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 50; background: rgba(30, 20, 10, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal {
+  background: var(--surface); color: var(--text); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px;
+}
+.modal h3 { margin: 0; }
+.modal.center { text-align: center; }
+.modal-note { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.modal-buttons { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.modal.center .modal-buttons { justify-content: center; }
+.big-emoji { font-size: 3rem; line-height: 1; }
+.goal-rows { display: flex; flex-direction: column; gap: 8px; }
+.goal-pick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.goal-pick input[type="checkbox"] { accent-color: var(--primary); width: 18px; height: 18px; }
+.goal-pick b { width: 28px; }
+.goal-pick input[type="number"] {
+  width: 72px; padding: 6px 8px; font-size: 1rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+.goal-pick input[type="number"]:disabled { opacity: 0.5; }
+.goal-pick small { color: var(--muted); }
 
 /* ===== หน้ารอโหลด ===== */
 .loading-screen {

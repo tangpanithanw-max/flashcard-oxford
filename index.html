@@ -68,6 +68,7 @@
   <header class="topbar">
     <h1>แฟลชการ์ด Oxford 3000</h1>
     <div class="account">
+      <span id="streakBadge" class="streak" title="จำนวนวันที่เล่นติดกัน"></span>
       <span id="userLabel" class="user-label"></span>
       <button type="button" class="btn small theme-btn" aria-label="สลับโหมดสว่าง/มืด">🌙</button>
       <button id="logoutBtn" class="btn small">ออกจากระบบ</button>
@@ -75,6 +76,21 @@
   </header>
 
   <main class="container">
+    <!-- ===== ช่องค้นหาคำ (อังกฤษหรือไทย) ===== -->
+    <section class="search">
+      <input id="searchInput" type="search" placeholder="🔍 ค้นหาคำ (อังกฤษหรือไทย)" autocomplete="off">
+      <div id="searchResults" class="search-results hidden"></div>
+    </section>
+
+    <!-- ===== เป้าหมายรายวัน ===== -->
+    <section id="goalBox" class="goal-box"></section>
+
+    <!-- ===== เลือกโหมด: เรียนคำใหม่ / ทวน ===== -->
+    <section class="modes">
+      <button id="modeLearn" class="mode-btn active">📖 เรียนคำใหม่</button>
+      <button id="modeReview" class="mode-btn">🔁 ทวนคำที่จำไม่ได้</button>
+    </section>
+
     <!-- ===== ปุ่มเลือกระดับ ===== -->
     <section class="levels" id="levelButtons">
       <button class="level-btn active" data-level="ALL">ทั้งหมด</button>
@@ -86,9 +102,6 @@
 
     <!-- ===== ตัวเลือกอื่นๆ ===== -->
     <section class="options">
-      <label class="check">
-        <input type="checkbox" id="onlyUnknown"> แสดงเฉพาะคำที่ยังไม่จำ
-      </label>
       <button id="shuffleBtn" class="btn small">🔀 สุ่มลำดับ</button>
       <label>สำเนียง
         <select id="accentSelect">
@@ -104,6 +117,9 @@
       </label>
     </section>
     <p id="voiceNotice" class="notice hidden"></p>
+
+    <!-- ===== แถบบอกโหมดตอนดูคำที่ค้นหา ===== -->
+    <p id="modeBanner" class="notice hidden"></p>
 
     <!-- ===== การ์ด (คลิกเพื่อพลิก) ===== -->
     <section class="card-area">
@@ -126,7 +142,8 @@
           </div>
         </div>
       </div>
-      <p id="emptyMessage" class="empty hidden">ไม่มีคำในตัวกรองนี้ 🎉 ลองเปลี่ยนระดับหรือปิดตัวกรอง</p>
+      <!-- ข้อความตอนไม่มีการ์ด / สรุปรอบทวน (ข้อความใส่จาก app.js) -->
+      <div id="emptyBox" class="empty hidden"></div>
 
       <!-- ===== ปุ่มจำได้/ยังไม่จำ และปุ่มเลื่อนการ์ด ===== -->
       <div class="mark-buttons">
@@ -137,15 +154,62 @@
         <button id="prevBtn" class="btn">◀ ก่อนหน้า</button>
         <button id="nextBtn" class="btn">ถัดไป ▶</button>
       </div>
+      <button id="undoBtn" class="link-btn undo" disabled>↩ เลิกทำล่าสุด</button>
     </section>
 
     <!-- ===== สถิติ ===== -->
     <section class="stats">
       <h3>สถิติการจำ</h3>
       <div id="statsList"></div>
+      <p class="legend"><span class="dot known"></span>จำได้แล้ว <span class="dot learning"></span>ยังจำไม่ได้ <span class="dot new"></span>ยังไม่เปิด</p>
       <p id="syncStatus" class="sync-status"></p>
     </section>
+
+    <!-- ===== ลิสต์คำ ===== -->
+    <section class="stats lists">
+      <h3>ลิสต์คำ</h3>
+      <div class="list-tabs">
+        <button id="tabKnown" class="mode-btn active">✅ จำได้แล้ว</button>
+        <button id="tabLearning" class="mode-btn">❌ ยังจำไม่ได้</button>
+      </div>
+      <div class="levels small" id="listLevels">
+        <button class="level-btn active" data-level="ALL">ทั้งหมด</button>
+        <button class="level-btn" data-level="A1">A1</button>
+        <button class="level-btn" data-level="A2">A2</button>
+        <button class="level-btn" data-level="B1">B1</button>
+        <button class="level-btn" data-level="B2">B2</button>
+      </div>
+      <div id="listActions" class="list-actions"></div>
+      <div id="wordList" class="word-list"></div>
+    </section>
   </main>
+  </div>
+
+  <!-- ===== หน้าต่างตั้งเป้าหมาย ===== -->
+  <div id="goalModal" class="modal-overlay hidden">
+    <form id="goalForm" class="modal" novalidate>
+      <h3>ตั้งเป้าหมาย</h3>
+      <p class="modal-note">ติ๊กระดับที่ต้องการ แล้วใส่จำนวนคำ เป้าหมายจะอยู่ 24 ชั่วโมงนับจากตอนกดตั้ง</p>
+      <div id="goalRows" class="goal-rows"></div>
+      <p id="goalFormMsg" class="auth-message"></p>
+      <div class="modal-buttons">
+        <button type="button" id="goalCancel" class="btn">ยกเลิก</button>
+        <button type="submit" class="btn primary">บันทึกเป้าหมาย</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== หน้าต่างบรรลุเป้าหมาย ===== -->
+  <div id="doneModal" class="modal-overlay hidden">
+    <div class="modal center">
+      <div class="big-emoji">🎉</div>
+      <h3>บรรลุเป้าหมายของวันนี้แล้ว!</h3>
+      <p id="doneText" class="modal-note"></p>
+      <div class="modal-buttons">
+        <button type="button" id="doneContinue" class="btn">เล่นต่อแบบไม่ตั้งเป้า</button>
+        <button type="button" id="doneNewGoal" class="btn primary">ตั้งเป้าหมายใหม่</button>
+      </div>
+    </div>
   </div>
 
 
