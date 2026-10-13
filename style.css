@@ -1,0 +1,199 @@
+/* ===== ตัวแปรสี (แก้ตรงนี้ที่เดียวเพื่อเปลี่ยนธีม) ===== */
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --card-back: #eef4ff;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --primary: #3b5bdb;
+  --green: #2f9e44;
+  --red: #e03131;
+  --border: #d0d7e2;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.hidden { display: none !important; }
+
+/* ===== แถบด้านบน ===== */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--primary);
+  color: #fff;
+}
+.topbar h1 { font-size: 1.15rem; margin: 0; }
+.account { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.user-label { font-size: 0.85rem; opacity: 0.95; }
+
+.container { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+/* ===== ปุ่มทั่วไป ===== */
+.btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn:hover { filter: brightness(0.96); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.small { padding: 6px 12px; font-size: 0.9rem; }
+.btn.green { background: var(--green); border-color: var(--green); color: #fff; }
+.btn.red { background: var(--red); border-color: var(--red); color: #fff; }
+.btn.google { width: 100%; }
+.link-btn {
+  background: none; border: none; color: var(--primary);
+  text-decoration: underline; cursor: pointer; font-family: inherit; padding: 4px 0;
+}
+
+/* ===== ปุ่มเลือกระดับ ===== */
+.levels { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.level-btn {
+  flex: 1 1 auto;
+  min-width: 56px;
+  padding: 10px;
+  border: 2px solid var(--primary);
+  background: #fff;
+  color: var(--primary);
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+}
+.level-btn.active { background: var(--primary); color: #fff; }
+
+/* ===== ตัวเลือก ===== */
+.options {
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
+  margin-bottom: 12px; font-size: 0.95rem;
+}
+.options select { font-size: 0.95rem; padding: 4px; margin-left: 4px; font-family: inherit; }
+.check { display: flex; align-items: center; gap: 6px; }
+.notice {
+  background: #fff4e6; border: 1px solid #ffc078; color: #7a4500;
+  padding: 8px 12px; border-radius: 8px; font-size: 0.9rem;
+}
+
+/* ===== การ์ด: ใช้ CSS 3D ทำให้พลิกได้ =====
+   .card-inner หมุน 180 องศาเมื่อ .card มี class "flipped"
+   ด้านหลังถูกหมุนไว้ 180 องศาตั้งแต่แรก จึงเห็นเมื่อพลิก */
+.card-area { text-align: center; }
+.counter { color: var(--muted); margin: 0 0 8px; }
+.card {
+  perspective: 1000px;
+  width: 100%;
+  height: 300px;
+  cursor: pointer;
+  outline: none;
+}
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+.card.flipped .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 8px;
+}
+.card-front { background: var(--card); }
+.card-back { background: var(--card-back); transform: rotateY(180deg); }
+.card:focus-visible .card-face { outline: 3px solid var(--primary); }
+
+.word { font-size: 2.4rem; margin: 0; word-break: break-word; }
+.pos { color: var(--muted); font-style: italic; margin: 0; }
+.meaning { font-size: 1.6rem; font-weight: bold; margin: 0; }
+.example { font-size: 1.1rem; margin: 0; }
+.hint { color: var(--muted); font-size: 0.85rem; margin: 4px 0 0; }
+.speak { font-size: 0.95rem; }
+
+.level-tag, .status-tag {
+  position: absolute; top: 12px;
+  font-size: 0.8rem; padding: 2px 10px; border-radius: 999px;
+}
+.level-tag { left: 12px; background: var(--primary); color: #fff; }
+.status-tag { right: 12px; }
+.status-tag.known { background: #d3f9d8; color: var(--green); }
+.status-tag.learning { background: #ffe3e3; color: var(--red); }
+
+.empty { padding: 40px 0; color: var(--muted); }
+
+.mark-buttons, .nav-buttons {
+  display: flex; gap: 10px; margin-top: 14px;
+}
+.mark-buttons .btn, .nav-buttons .btn { flex: 1; }
+
+/* ===== สถิติ ===== */
+.stats {
+  margin-top: 24px; background: #fff; border-radius: var(--radius);
+  padding: 16px; border: 1px solid var(--border);
+}
+.stats h3 { margin-top: 0; }
+.stat-row { margin-bottom: 10px; }
+.stat-label { display: flex; justify-content: space-between; font-size: 0.95rem; }
+.bar { height: 10px; background: #e9ecef; border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+.sync-status { color: var(--muted); font-size: 0.85rem; margin-bottom: 0; }
+
+/* ===== หน้าต่างล็อกอิน ===== */
+.modal {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.modal-box {
+  position: relative; background: #fff; border-radius: var(--radius);
+  padding: 20px; width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.modal-box h3 { margin: 0 0 4px; }
+.modal-box input {
+  padding: 10px; font-size: 1rem; border: 1px solid var(--border);
+  border-radius: 8px; font-family: inherit;
+}
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions .btn { flex: 1; }
+.close {
+  position: absolute; top: 8px; right: 10px; border: none; background: none;
+  font-size: 1.2rem; cursor: pointer;
+}
+.divider { text-align: center; color: var(--muted); font-size: 0.85rem; }
+.auth-message { min-height: 1.2em; font-size: 0.9rem; color: var(--red); margin: 0; }
+.auth-message.ok { color: var(--green); }
+
+/* ===== มือถือจอเล็ก ===== */
+@media (max-width: 420px) {
+  .word { font-size: 2rem; }
+  .meaning { font-size: 1.35rem; }
+  .card { height: 280px; }
+  .topbar h1 { font-size: 1rem; }
+}

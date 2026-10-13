@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>แฟลชการ์ด Oxford 3000</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ===== แถบด้านบน: ชื่อเว็บ + ปุ่มล็อกอิน ===== -->
+  <header class="topbar">
+    <h1>แฟลชการ์ด Oxford 3000</h1>
+    <div class="account">
+      <span id="userLabel" class="user-label">ยังไม่ได้ล็อกอิน (บันทึกในเครื่องนี้)</span>
+      <button id="loginBtn" class="btn small">ล็อกอิน</button>
+      <button id="logoutBtn" class="btn small hidden">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ===== ปุ่มเลือกระดับ ===== -->
+    <section class="levels" id="levelButtons">
+      <button class="level-btn active" data-level="ALL">ทั้งหมด</button>
+      <button class="level-btn" data-level="A1">A1</button>
+      <button class="level-btn" data-level="A2">A2</button>
+      <button class="level-btn" data-level="B1">B1</button>
+      <button class="level-btn" data-level="B2">B2</button>
+    </section>
+
+    <!-- ===== ตัวเลือกอื่นๆ ===== -->
+    <section class="options">
+      <label class="check">
+        <input type="checkbox" id="onlyUnknown"> แสดงเฉพาะคำที่ยังไม่จำ
+      </label>
+      <button id="shuffleBtn" class="btn small">🔀 สุ่มลำดับ</button>
+      <label>สำเนียง
+        <select id="accentSelect">
+          <option value="en-US">อเมริกัน (en-US)</option>
+          <option value="en-GB">อังกฤษ (en-GB)</option>
+        </select>
+      </label>
+      <label>ความเร็ว
+        <select id="speedSelect">
+          <option value="1">ปกติ</option>
+          <option value="0.6">ช้า</option>
+        </select>
+      </label>
+    </section>
+    <p id="voiceNotice" class="notice hidden"></p>
+
+    <!-- ===== การ์ด (คลิกเพื่อพลิก) ===== -->
+    <section class="card-area">
+      <p id="counter" class="counter"></p>
+      <div id="card" class="card" tabindex="0" aria-label="แฟลชการ์ด คลิกเพื่อพลิก">
+        <div class="card-inner">
+          <div class="card-face card-front">
+            <span id="levelTag" class="level-tag"></span>
+            <span id="statusTag" class="status-tag"></span>
+            <h2 id="wordText" class="word"></h2>
+            <p id="posText" class="pos"></p>
+            <button id="speakWordBtn" class="btn speak">🔊 ฟังคำศัพท์</button>
+            <p class="hint">แตะการ์ดเพื่อดูความหมาย</p>
+          </div>
+          <div class="card-face card-back">
+            <p id="meaningText" class="meaning"></p>
+            <p id="exampleText" class="example"></p>
+            <button id="speakExampleBtn" class="btn speak">🔊 ฟังประโยคตัวอย่าง</button>
+          </div>
+        </div>
+      </div>
+      <p id="emptyMessage" class="empty hidden">ไม่มีคำในตัวกรองนี้ 🎉 ลองเปลี่ยนระดับหรือปิดตัวกรอง</p>
+
+      <!-- ===== ปุ่มจำได้/ยังไม่จำ และปุ่มเลื่อนการ์ด ===== -->
+      <div class="mark-buttons">
+        <button id="unknownBtn" class="btn red">❌ ยังไม่จำ</button>
+        <button id="knownBtn" class="btn green">✅ จำได้แล้ว</button>
+      </div>
+      <div class="nav-buttons">
+        <button id="prevBtn" class="btn">◀ ก่อนหน้า</button>
+        <button id="nextBtn" class="btn">ถัดไป ▶</button>
+      </div>
+    </section>
+
+    <!-- ===== สถิติ ===== -->
+    <section class="stats">
+      <h3>สถิติการจำ</h3>
+      <div id="statsList"></div>
+      <p id="syncStatus" class="sync-status"></p>
+    </section>
+  </main>
+
+  <!-- ===== หน้าต่างล็อกอิน (ซ่อนไว้ก่อน) ===== -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-box">
+      <button id="closeModal" class="close" aria-label="ปิด">✕</button>
+      <h3>ล็อกอิน / สมัครสมาชิก</h3>
+      <input id="emailInput" type="email" placeholder="อีเมล" autocomplete="email">
+      <input id="passwordInput" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="current-password">
+      <div class="modal-actions">
+        <button id="emailLoginBtn" class="btn green">ล็อกอิน</button>
+        <button id="signupBtn" class="btn">สมัครสมาชิก</button>
+      </div>
+      <button id="resetBtn" class="link-btn">ลืมรหัสผ่าน?</button>
+      <div class="divider">หรือ</div>
+      <button id="googleBtn" class="btn google">เข้าสู่ระบบด้วย Google</button>
+      <p id="authMessage" class="auth-message"></p>
+    </div>
+  </div>
+
+  <!-- Firebase (เวอร์ชัน compat ใช้ได้กับ <script> ธรรมดา ไม่ต้อง build) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- ต้องโหลด words.js ก่อน app.js เพราะ app.js ใช้ข้อมูลคำศัพท์ -->
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
