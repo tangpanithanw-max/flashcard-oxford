@@ -1,93 +1,127 @@
-/* ===== ตัวแปรสี (แก้ตรงนี้ที่เดียวเพื่อเปลี่ยนธีม) ===== */
+/* =============================================================
+   ตัวแปรสีและฟอนต์ (แก้ตรงนี้ที่เดียวเพื่อเปลี่ยนทั้งเว็บ)
+   - :root                     = โหมดสว่าง (ครีม-ส้ม)
+   - prefers-color-scheme dark = โหมดมืดตามเครื่อง (ถ้ายังไม่เคยกดเลือกเอง)
+   - [data-theme="dark"]       = โหมดมืดที่ผู้ใช้กดเลือกเอง
+   ============================================================= */
 :root {
-  --bg: #f4f6fb;
-  --card: #ffffff;
-  --card-back: #eef4ff;
-  --text: #1f2933;
-  --muted: #6b7280;
-  --primary: #3b5bdb;
-  --green: #2f9e44;
-  --red: #e03131;
-  --border: #d0d7e2;
-  --radius: 14px;
+  --font: "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --bg: #fbf5ea;          /* พื้นหลังครีม */
+  --surface: #fffaf2;     /* กล่อง/การ์ดหน้า */
+  --surface-2: #fdebd3;   /* หลังการ์ด ส้มอ่อน */
+  --text: #3d2c1e;        /* น้ำตาลเข้ม อ่านสบายตากว่าดำสนิท */
+  --muted: #8a7260;
+  --primary: #e07a2f;     /* ส้มหลัก */
+  --primary-text: #ffffff;
+  --border: #ecdcc6;
+  --track: #f3e4cf;       /* พื้นหลอดสถิติ */
+  --green: #4c9a52;
+  --green-soft: #e3f1dc;
+  --red: #d0563b;
+  --red-soft: #fbe2d9;
+  --notice-bg: #fff1dc;
+  --notice-text: #8a4b12;
+  --shadow: 0 6px 20px rgba(120, 72, 20, 0.10);
+  --radius: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1f1a16; --surface: #2a231d; --surface-2: #3a2c20;
+    --text: #f3e6d6; --muted: #bba48f;
+    --primary: #f29a52; --primary-text: #1f1a16;
+    --border: #44372b; --track: #3a3027;
+    --green: #7cc382; --green-soft: #26372a; --red: #f08a72; --red-soft: #45271f;
+    --notice-bg: #3a2c20; --notice-text: #f6c999;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1f1a16; --surface: #2a231d; --surface-2: #3a2c20;
+  --text: #f3e6d6; --muted: #bba48f;
+  --primary: #f29a52; --primary-text: #1f1a16;
+  --border: #44372b; --track: #3a3027;
+  --green: #7cc382; --green-soft: #26372a; --red: #f08a72; --red-soft: #45271f;
+  --notice-bg: #3a2c20; --notice-text: #f6c999;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.55;
 }
+button, input, select { font-family: inherit; }
 
 .hidden { display: none !important; }
 
 /* ===== แถบด้านบน ===== */
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--primary);
-  color: #fff;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-.topbar h1 { font-size: 1.15rem; margin: 0; }
+.topbar h1 { font-size: 1.15rem; margin: 0; color: var(--primary); }
 .account { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.user-label { font-size: 0.85rem; opacity: 0.95; }
+.user-label { font-size: 0.85rem; color: var(--muted); }
 
 .container { max-width: 640px; margin: 0 auto; padding: 16px; }
 
 /* ===== ปุ่มทั่วไป ===== */
 .btn {
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1rem;
   cursor: pointer;
-  font-family: inherit;
 }
-.btn:hover { filter: brightness(0.96); }
+.btn:hover { filter: brightness(0.97); }
+.btn:focus-visible, .level-btn:focus-visible, .link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.small { padding: 6px 12px; font-size: 0.9rem; }
-.btn.green { background: var(--green); border-color: var(--green); color: #fff; }
-.btn.red { background: var(--red); border-color: var(--red); color: #fff; }
-.btn.google { width: 100%; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
+.btn.green { background: var(--green); border-color: var(--green); color: var(--primary-text); }
+.btn.red { background: var(--red); border-color: var(--red); color: var(--primary-text); }
 .link-btn {
   background: none; border: none; color: var(--primary);
-  text-decoration: underline; cursor: pointer; font-family: inherit; padding: 4px 0;
+  text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: inherit;
 }
+
+/* ปุ่มสลับโหมดสว่าง/มืด */
+.theme-btn { min-width: 40px; }
 
 /* ===== ปุ่มเลือกระดับ ===== */
 .levels { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .level-btn {
-  flex: 1 1 auto;
-  min-width: 56px;
-  padding: 10px;
-  border: 2px solid var(--primary);
-  background: #fff;
-  color: var(--primary);
-  border-radius: 999px;
-  font-weight: bold;
-  cursor: pointer;
-  font-family: inherit;
+  flex: 1 1 auto; min-width: 56px; padding: 10px;
+  border: 2px solid var(--primary); background: var(--surface); color: var(--primary);
+  border-radius: 999px; font-weight: bold; cursor: pointer;
 }
-.level-btn.active { background: var(--primary); color: #fff; }
+.level-btn.active { background: var(--primary); color: var(--primary-text); }
 
 /* ===== ตัวเลือก ===== */
 .options {
   display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
   margin-bottom: 12px; font-size: 0.95rem;
 }
-.options select { font-size: 0.95rem; padding: 4px; margin-left: 4px; font-family: inherit; }
+.options select {
+  font-size: 0.95rem; padding: 4px 6px; margin-left: 4px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px;
+}
 .check { display: flex; align-items: center; gap: 6px; }
+.check input { accent-color: var(--primary); }
 .notice {
-  background: #fff4e6; border: 1px solid #ffc078; color: #7a4500;
+  background: var(--notice-bg); border: 1px solid var(--border); color: var(--notice-text);
   padding: 8px 12px; border-radius: 8px; font-size: 0.9rem;
 }
 
@@ -96,44 +130,29 @@ body {
    ด้านหลังถูกหมุนไว้ 180 องศาตั้งแต่แรก จึงเห็นเมื่อพลิก */
 .card-area { text-align: center; }
 .counter { color: var(--muted); margin: 0 0 8px; }
-.card {
-  perspective: 1000px;
-  width: 100%;
-  height: 300px;
-  cursor: pointer;
-  outline: none;
-}
+.card { perspective: 1000px; width: 100%; height: 320px; cursor: pointer; outline: none; }
 .card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.5s;
-  transform-style: preserve-3d;
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.5s; transform-style: preserve-3d;
 }
 .card.flipped .card-inner { transform: rotateY(180deg); }
 .card-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  gap: 8px;
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 44px 20px 20px; gap: 8px;
+  overflow-y: auto; /* ถ้าประโยคยาวมาก ให้เลื่อนดูในการ์ดได้ */
 }
-.card-front { background: var(--card); }
-.card-back { background: var(--card-back); transform: rotateY(180deg); }
+.card-front { background: var(--surface); }
+.card-back { background: var(--surface-2); transform: rotateY(180deg); }
 .card:focus-visible .card-face { outline: 3px solid var(--primary); }
 
 .word { font-size: 2.4rem; margin: 0; word-break: break-word; }
 .pos { color: var(--muted); font-style: italic; margin: 0; }
 .meaning { font-size: 1.6rem; font-weight: bold; margin: 0; }
 .example { font-size: 1.1rem; margin: 0; }
+.example-th { font-size: 1rem; color: var(--muted); margin: 0; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 4px 0 0; }
 .speak { font-size: 0.95rem; }
 
@@ -141,28 +160,26 @@ body {
   position: absolute; top: 12px;
   font-size: 0.8rem; padding: 2px 10px; border-radius: 999px;
 }
-.level-tag { left: 12px; background: var(--primary); color: #fff; }
+.level-tag { left: 12px; background: var(--primary); color: var(--primary-text); }
 .status-tag { right: 12px; }
-.status-tag.known { background: #d3f9d8; color: var(--green); }
-.status-tag.learning { background: #ffe3e3; color: var(--red); }
+.status-tag.known { background: var(--green-soft); color: var(--green); }
+.status-tag.learning { background: var(--red-soft); color: var(--red); }
 
 .empty { padding: 40px 0; color: var(--muted); }
 
-.mark-buttons, .nav-buttons {
-  display: flex; gap: 10px; margin-top: 14px;
-}
+.mark-buttons, .nav-buttons { display: flex; gap: 10px; margin-top: 14px; }
 .mark-buttons .btn, .nav-buttons .btn { flex: 1; }
 
 /* ===== สถิติ ===== */
 .stats {
-  margin-top: 24px; background: #fff; border-radius: var(--radius);
+  margin-top: 24px; background: var(--surface); border-radius: var(--radius);
   padding: 16px; border: 1px solid var(--border);
 }
 .stats h3 { margin-top: 0; }
 .stat-row { margin-bottom: 10px; }
-.stat-label { display: flex; justify-content: space-between; font-size: 0.95rem; }
-.bar { height: 10px; background: #e9ecef; border-radius: 999px; overflow: hidden; }
-.bar-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+.stat-label { display: flex; justify-content: space-between; gap: 8px; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.bar { height: 10px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
 .sync-status { color: var(--muted); font-size: 0.85rem; margin-bottom: 0; }
 
 /* ===== หน้ารอโหลด ===== */
@@ -173,23 +190,25 @@ body {
 
 /* ===== หน้าเข้าสู่ระบบ / สมัครสมาชิก ===== */
 .auth-screen {
+  position: relative;
   min-height: 100vh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 24px 16px;
-  background: linear-gradient(160deg, var(--primary), #7048e8);
+  background: var(--bg);
 }
-.auth-title { color: #fff; font-size: 1.5rem; margin: 0 0 16px; text-align: center; }
+.auth-screen .theme-btn { position: absolute; top: 16px; right: 16px; }
+.auth-title { color: var(--primary); font-size: 1.5rem; margin: 0 0 16px; text-align: center; }
 .auth-box {
-  background: #fff; border-radius: var(--radius); padding: 24px;
-  width: 100%; max-width: 380px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; width: 100%; max-width: 380px;
   display: flex; flex-direction: column; gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
 }
 .auth-box h2 { margin: 0 0 4px; text-align: center; }
 .auth-box label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; color: var(--muted); }
 .auth-box input {
-  padding: 10px; font-size: 1rem; border: 1px solid var(--border);
-  border-radius: 8px; font-family: inherit; color: var(--text);
+  padding: 10px; font-size: 1rem; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text);
 }
 .auth-box input:focus { outline: 2px solid var(--primary); border-color: transparent; }
 .btn.full { width: 100%; }
@@ -198,10 +217,15 @@ body {
 .auth-message.ok { color: var(--green); }
 .switch { text-align: center; margin: 4px 0 0; font-size: 0.95rem; }
 
+/* ===== ลดการเคลื่อนไหวสำหรับคนที่ตั้งค่าไว้ในเครื่อง ===== */
+@media (prefers-reduced-motion: reduce) {
+  .card-inner, .bar-fill { transition: none; }
+}
+
 /* ===== มือถือจอเล็ก ===== */
 @media (max-width: 420px) {
   .word { font-size: 2rem; }
   .meaning { font-size: 1.35rem; }
-  .card { height: 280px; }
+  .card { height: 320px; }
   .topbar h1 { font-size: 1rem; }
 }

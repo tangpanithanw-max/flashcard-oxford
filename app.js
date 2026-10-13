@@ -65,7 +65,7 @@ const $ = (id) => document.getElementById(id);
 const el = {
   card: $("card"), counter: $("counter"), empty: $("emptyMessage"),
   word: $("wordText"), pos: $("posText"), levelTag: $("levelTag"), statusTag: $("statusTag"),
-  meaning: $("meaningText"), example: $("exampleText"),
+  meaning: $("meaningText"), example: $("exampleText"), exampleTh: $("exampleThText"),
   onlyUnknown: $("onlyUnknown"), accent: $("accentSelect"), speed: $("speedSelect"),
   voiceNotice: $("voiceNotice"), stats: $("statsList"), sync: $("syncStatus"),
   userLabel: $("userLabel"), logoutBtn: $("logoutBtn"),
@@ -143,6 +143,7 @@ function render() {
     el.levelTag.textContent = w.level;
     el.meaning.textContent = w.meaning;
     el.example.textContent = w.example;
+    el.exampleTh.textContent = w.exampleTh || ""; // คำไหนยังไม่มีคำแปล บรรทัดนี้จะว่าง
 
     const st = progress[wordKey(w)]?.s;
     el.statusTag.className = "status-tag" + (st ? " " + st : "");
@@ -448,6 +449,34 @@ function saveSettings() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({ accent: el.accent.value, speed: el.speed.value }));
   } catch (e) { /* ไม่เป็นไร */ }
 }
+
+// -------------------------------------------------------------
+// 10.1) โหมดสว่าง/มืด
+//    ครั้งแรกใช้ตามการตั้งค่าของเครื่อง ถ้ากดปุ่มเลือกเอง จะจำไว้ใน localStorage
+//    (สีของแต่ละโหมดกำหนดไว้ใน style.css)
+// -------------------------------------------------------------
+const THEME_KEY = "flashcard-theme";
+
+function currentTheme() {
+  const chosen = document.documentElement.dataset.theme;
+  if (chosen) return chosen;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function updateThemeButtons() {
+  const dark = currentTheme() === "dark";
+  document.querySelectorAll(".theme-btn").forEach((b) => {
+    b.textContent = dark ? "☀️" : "🌙"; // แสดงไอคอนของโหมดที่จะสลับไป
+    b.title = dark ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด";
+  });
+}
+function toggleTheme() {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* ไม่เป็นไร */ }
+  updateThemeButtons();
+}
+document.querySelectorAll(".theme-btn").forEach((b) => (b.onclick = toggleTheme));
+updateThemeButtons();
 
 // -------------------------------------------------------------
 // 11) ผูกปุ่มต่างๆ กับฟังก์ชัน
