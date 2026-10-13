@@ -35,14 +35,16 @@ if (firebaseReady) {
 // 2) สถานะของแอป
 // -------------------------------------------------------------
 const LEVELS = ["A1", "A2", "B1", "B2"];
-const STORAGE_KEY = "flashcard-progress";
+// แยกที่เก็บในเครื่องตามผู้ใช้ เช่น "flashcard-progress-<uid>"
+// เครื่องเดียวกันใช้หลายบัญชีได้ ข้อมูลไม่ปนกัน
+const STORAGE_PREFIX = "flashcard-progress-";
 const SETTINGS_KEY = "flashcard-settings";
 
 // progress เก็บสถานะของแต่ละคำ เช่น
 // { "book|noun": { s: "known", t: 1700000000000 } }
 //   s = "known" (จำได้แล้ว) หรือ "learning" (ยังไม่จำ)
 //   t = เวลาที่กดล่าสุด ใช้ตัดสินว่าข้อมูลไหนใหม่กว่าตอนรวมข้อมูลจากหลายเครื่อง
-let progress = loadLocalProgress();
+let progress = {};
 let currentUser = null;
 
 let selectedLevel = "ALL";
@@ -66,24 +68,32 @@ const el = {
   meaning: $("meaningText"), example: $("exampleText"),
   onlyUnknown: $("onlyUnknown"), accent: $("accentSelect"), speed: $("speedSelect"),
   voiceNotice: $("voiceNotice"), stats: $("statsList"), sync: $("syncStatus"),
-  userLabel: $("userLabel"), loginBtn: $("loginBtn"), logoutBtn: $("logoutBtn"),
-  modal: $("authModal"), email: $("emailInput"), password: $("passwordInput"),
-  authMsg: $("authMessage")
+  userLabel: $("userLabel"), logoutBtn: $("logoutBtn"),
+  // 3 หน้าจอหลัก: กำลังโหลด / เข้าสู่ระบบ-สมัคร / เล่นแฟลชการ์ด
+  loadingScreen: $("loadingScreen"), authScreen: $("authScreen"), appScreen: $("appScreen"),
+  loginView: $("loginView"), registerView: $("registerView"),
+  loginEmail: $("loginEmail"), loginPassword: $("loginPassword"), loginMsg: $("loginMessage"),
+  registerEmail: $("registerEmail"), registerPassword: $("registerPassword"),
+  registerConfirm: $("registerConfirm"), registerMsg: $("registerMessage")
 };
 
 // -------------------------------------------------------------
-// 4) localStorage: เก็บความคืบหน้าในเครื่อง (ใช้ตอนยังไม่ล็อกอิน)
+// 4) localStorage: สำเนาความคืบหน้าในเครื่อง
+//    ช่วยให้เปิดเว็บแล้วเห็นข้อมูลทันที และไม่หายถ้าเน็ตหลุดระหว่างกด
 // -------------------------------------------------------------
+function localKey() {
+  return STORAGE_PREFIX + (currentUser ? currentUser.uid : "none");
+}
 function loadLocalProgress() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return JSON.parse(localStorage.getItem(localKey())) || {};
   } catch (e) {
     return {}; // ถ้าข้อมูลเสียหรือเบราว์เซอร์ปิด localStorage ก็เริ่มใหม่
   }
 }
 function saveLocalProgress() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    localStorage.setItem(localKey(), JSON.stringify(progress));
   } catch (e) { /* โหมดไม่ระบุตัวตนบางเบราว์เซอร์อาจบันทึกไม่ได้ */ }
 }
 
@@ -307,70 +317,120 @@ function authErrorText(err) {
   return map[err.code] || "เกิดข้อผิดพลาด: " + (err.code || err.message);
 }
 
-function showAuthMessage(text, ok) {
-  el.authMsg.textContent = text;
-  el.authMsg.classList.toggle("ok", !!ok);
+// แสดงข้อความใต้ฟอร์ม (สีแดง = ผิดพลาด, สีเขียว = สำเร็จ)
+function showMessage(target, text, ok) {
+  target.textContent = text;
+  target.classList.toggle("ok", !!ok);
 }
 
-function openModal() {
-  if (!firebaseReady) {
-    alert("ยังไม่ได้ใส่ Firebase config ใน app.js (ทำในขั้นที่ 2) ตอนนี้ความคืบหน้าบันทึกในเครื่องนี้เท่านั้น");
-    return;
-  }
-  showAuthMessage("");
-  el.modal.classList.remove("hidden");
+// สลับหน้าจอ: "loading" | "auth" | "app"
+function showScreen(name) {
+  el.loadingScreen.classList.toggle("hidden", name !== "loading");
+  el.authScreen.classList.toggle("hidden", name !== "auth");
+  el.appScreen.classList.toggle("hidden", name !== "app");
 }
-function closeModal() {
-  el.modal.classList.add("hidden");
-  el.password.value = "";
+
+// สลับระหว่างหน้าเข้าสู่ระบบ กับหน้าสมัครสมาชิก
+function showAuthView(name) {
+  el.loginView.classList.toggle("hidden", name !== "login");
+  el.registerView.classList.toggle("hidden", name !== "register");
+  showMessage(el.loginMsg, "");
+  showMessage(el.registerMsg, "");
+}
+
+// ปิดปุ่มในฟอร์มระหว่างรอ Firebase ตอบ กันกดซ้ำ และให้รู้ว่ากำลังทำงาน
+function setBusy(form, busy) {
+  form.querySelectorAll("button").forEach((b) => (b.disabled = busy));
+  const submit = form.querySelector('button[type="submit"]');
+  if (busy) {
+    submit.dataset.label = submit.textContent;
+    submit.textContent = "กำลังดำเนินการ...";
+  } else if (submit.dataset.label) {
+    submit.textContent = submit.dataset.label;
+  }
 }
 
 function setupAuth() {
-  if (!firebaseReady) return;
+  if (!firebaseReady) {
+    showScreen("auth");
+    showMessage(el.loginMsg, "ยังไม่ได้ใส่ Firebase config ใน app.js หรือโหลด Firebase ไม่ได้ (เช็กอินเทอร์เน็ต)");
+    el.loginView.querySelectorAll("button").forEach((b) => (b.disabled = true));
+    return;
+  }
 
   // ฟังก์ชันนี้ถูกเรียกทุกครั้งที่สถานะล็อกอินเปลี่ยน (รวมถึงตอนเปิดเว็บใหม่)
+  // Firebase จำการล็อกอินไว้ให้ เปิดเว็บครั้งหน้าจะเข้าหน้าเล่นเลยโดยไม่ต้องล็อกอินใหม่
   auth.onAuthStateChanged((user) => {
     currentUser = user;
-    el.loginBtn.classList.toggle("hidden", !!user);
-    el.logoutBtn.classList.toggle("hidden", !user);
     if (user) {
       el.userLabel.textContent = user.email || user.displayName || "ผู้ใช้";
-      closeModal();
+      progress = loadLocalProgress(); // แสดงข้อมูลในเครื่องก่อน ระหว่างรอคลาวด์
+      buildDeck(false);
+      showScreen("app");
       syncAfterLogin();
     } else {
-      el.userLabel.textContent = "ยังไม่ได้ล็อกอิน (บันทึกในเครื่องนี้)";
+      progress = {};
       el.sync.textContent = "";
+      el.loginPassword.value = "";
+      el.registerPassword.value = "";
+      el.registerConfirm.value = "";
+      showAuthView("login");
+      showScreen("auth");
     }
   });
 
-  $("emailLoginBtn").onclick = () => {
-    auth.signInWithEmailAndPassword(el.email.value.trim(), el.password.value)
-      .catch((e) => showAuthMessage(authErrorText(e)));
+  // ----- เข้าสู่ระบบด้วยอีเมล -----
+  el.loginView.onsubmit = (e) => {
+    e.preventDefault(); // ไม่ให้ฟอร์มรีโหลดหน้าเว็บ
+    const email = el.loginEmail.value.trim();
+    const password = el.loginPassword.value;
+    if (!email || !password) return showMessage(el.loginMsg, "กรุณาใส่อีเมลและรหัสผ่าน");
+    setBusy(el.loginView, true);
+    auth.signInWithEmailAndPassword(email, password)
+      .catch((err) => showMessage(el.loginMsg, authErrorText(err)))
+      .finally(() => setBusy(el.loginView, false));
   };
-  $("signupBtn").onclick = () => {
-    auth.createUserWithEmailAndPassword(el.email.value.trim(), el.password.value)
-      .catch((e) => showAuthMessage(authErrorText(e)));
+
+  // ----- สมัครสมาชิกด้วยอีเมล -----
+  el.registerView.onsubmit = (e) => {
+    e.preventDefault();
+    const email = el.registerEmail.value.trim();
+    const password = el.registerPassword.value;
+    if (!email || !password) return showMessage(el.registerMsg, "กรุณาใส่อีเมลและตั้งรหัสผ่าน");
+    if (password.length < 6) return showMessage(el.registerMsg, "รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร");
+    if (password !== el.registerConfirm.value) return showMessage(el.registerMsg, "รหัสผ่านทั้งสองช่องไม่ตรงกัน");
+    setBusy(el.registerView, true);
+    // สมัครสำเร็จ Firebase จะล็อกอินให้อัตโนมัติ แล้ว onAuthStateChanged จะพาไปหน้าเล่น
+    auth.createUserWithEmailAndPassword(email, password)
+      .catch((err) => showMessage(el.registerMsg, authErrorText(err)))
+      .finally(() => setBusy(el.registerView, false));
   };
+
+  // ----- ลืมรหัสผ่าน -----
   $("resetBtn").onclick = () => {
-    const email = el.email.value.trim();
-    if (!email) return showAuthMessage("ใส่อีเมลก่อน แล้วกดลืมรหัสผ่านอีกครั้ง");
+    const email = el.loginEmail.value.trim();
+    if (!email) return showMessage(el.loginMsg, "ใส่อีเมลในช่องด้านบนก่อน แล้วกดลืมรหัสผ่านอีกครั้ง");
     auth.sendPasswordResetEmail(email)
-      .then(() => showAuthMessage("ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว (ดูในกล่องจดหมายขยะด้วย)", true))
-      .catch((e) => showAuthMessage(authErrorText(e)));
+      .then(() => showMessage(el.loginMsg, "ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว (ดูในกล่องจดหมายขยะด้วย)", true))
+      .catch((err) => showMessage(el.loginMsg, authErrorText(err)));
   };
-  $("googleBtn").onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch((e) => showAuthMessage(authErrorText(e)));
-  };
-  el.logoutBtn.onclick = () => {
-    // ตอนออกจากระบบ ล้างความคืบหน้าในเครื่อง เพื่อไม่ให้คนถัดไปที่ใช้เครื่องนี้เห็น
-    // (ข้อมูลยังอยู่บนคลาวด์ ล็อกอินใหม่ก็กลับมา)
-    auth.signOut().then(() => {
-      progress = {};
-      saveLocalProgress();
-      buildDeck(true);
-    });
-  };
+
+  // ----- Google (ใช้ได้ทั้งหน้าเข้าสู่ระบบและหน้าสมัคร: ครั้งแรกที่ใช้คือการสมัครไปในตัว) -----
+  document.querySelectorAll(".google-btn").forEach((btn) => {
+    btn.onclick = () => {
+      const form = btn.closest("form");
+      const msg = form === el.loginView ? el.loginMsg : el.registerMsg;
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch((err) => showMessage(msg, authErrorText(err)));
+    };
+  });
+
+  // ----- ลิงก์สลับหน้า -----
+  $("toRegister").onclick = () => showAuthView("register");
+  $("toLogin").onclick = () => showAuthView("login");
+
+  // ----- ออกจากระบบ: กลับไปหน้าเข้าสู่ระบบ (ข้อมูลยังอยู่บนคลาวด์ครบ) -----
+  el.logoutBtn.onclick = () => auth.signOut();
 }
 
 // -------------------------------------------------------------
@@ -424,13 +484,9 @@ el.onlyUnknown.onchange = () => {
 el.accent.onchange = () => { saveSettings(); updateVoiceNotice(); };
 el.speed.onchange = saveSettings;
 
-el.loginBtn.onclick = openModal;
-$("closeModal").onclick = closeModal;
-el.modal.onclick = (e) => { if (e.target === el.modal) closeModal(); };
-
 // คีย์ลัดบนคอมพิวเตอร์: Space = พลิก, ← → = เลื่อนการ์ด
 document.addEventListener("keydown", (e) => {
-  if (!el.modal.classList.contains("hidden")) return;
+  if (el.appScreen.classList.contains("hidden")) return; // ยังไม่อยู่หน้าเล่น
   if (["INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) return;
   if (e.key === " ") { e.preventDefault(); el.card.classList.toggle("flipped"); }
   if (e.key === "ArrowRight") next();
@@ -442,5 +498,4 @@ document.addEventListener("keydown", (e) => {
 // -------------------------------------------------------------
 loadSettings();
 updateVoiceNotice();
-setupAuth();
-buildDeck(false);
+setupAuth(); // จะเลือกเองว่าแสดงหน้าเข้าสู่ระบบหรือหน้าเล่น

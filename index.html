@@ -7,13 +7,57 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ===== แถบด้านบน: ชื่อเว็บ + ปุ่มล็อกอิน ===== -->
+  <!-- ===== หน้ารอโหลด: แสดงระหว่างเช็กว่าล็อกอินอยู่หรือไม่ ===== -->
+  <div id="loadingScreen" class="loading-screen">กำลังโหลด...</div>
+
+  <!-- ===== หน้าเข้าสู่ระบบ / สมัครสมาชิก (แสดงเมื่อยังไม่ล็อกอิน) ===== -->
+  <section id="authScreen" class="auth-screen hidden">
+    <h1 class="auth-title">แฟลชการ์ด Oxford 3000</h1>
+
+    <!-- หน้าเข้าสู่ระบบ -->
+    <form id="loginView" class="auth-box" novalidate>
+      <h2>เข้าสู่ระบบ</h2>
+      <label>อีเมล
+        <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      </label>
+      <label>รหัสผ่าน
+        <input id="loginPassword" type="password" placeholder="รหัสผ่าน" autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn green full">เข้าสู่ระบบ</button>
+      <button type="button" id="resetBtn" class="link-btn">ลืมรหัสผ่าน?</button>
+      <div class="divider">หรือ</div>
+      <button type="button" class="btn full google-btn">เข้าสู่ระบบด้วย Google</button>
+      <p class="auth-message" id="loginMessage"></p>
+      <p class="switch">ยังไม่มีบัญชี? <button type="button" class="link-btn" id="toRegister">สมัครสมาชิก</button></p>
+    </form>
+
+    <!-- หน้าสมัครสมาชิก -->
+    <form id="registerView" class="auth-box hidden" novalidate>
+      <h2>สมัครสมาชิก</h2>
+      <label>อีเมล
+        <input id="registerEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      </label>
+      <label>ตั้งรหัสผ่าน (อย่างน้อย 6 ตัว)
+        <input id="registerPassword" type="password" placeholder="รหัสผ่านใหม่" autocomplete="new-password">
+      </label>
+      <label>ยืนยันรหัสผ่าน
+        <input id="registerConfirm" type="password" placeholder="พิมพ์รหัสผ่านอีกครั้ง" autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn green full">สมัครสมาชิก</button>
+      <div class="divider">หรือ</div>
+      <button type="button" class="btn full google-btn">สมัครด้วย Google</button>
+      <p class="auth-message" id="registerMessage"></p>
+      <p class="switch">มีบัญชีอยู่แล้ว? <button type="button" class="link-btn" id="toLogin">เข้าสู่ระบบ</button></p>
+    </form>
+  </section>
+
+  <!-- ===== หน้าเล่นแฟลชการ์ด (แสดงเมื่อล็อกอินแล้ว) ===== -->
+  <div id="appScreen" class="hidden">
   <header class="topbar">
     <h1>แฟลชการ์ด Oxford 3000</h1>
     <div class="account">
-      <span id="userLabel" class="user-label">ยังไม่ได้ล็อกอิน (บันทึกในเครื่องนี้)</span>
-      <button id="loginBtn" class="btn small">ล็อกอิน</button>
-      <button id="logoutBtn" class="btn small hidden">ออกจากระบบ</button>
+      <span id="userLabel" class="user-label"></span>
+      <button id="logoutBtn" class="btn small">ออกจากระบบ</button>
     </div>
   </header>
 
@@ -88,24 +132,8 @@
       <p id="syncStatus" class="sync-status"></p>
     </section>
   </main>
-
-  <!-- ===== หน้าต่างล็อกอิน (ซ่อนไว้ก่อน) ===== -->
-  <div id="authModal" class="modal hidden">
-    <div class="modal-box">
-      <button id="closeModal" class="close" aria-label="ปิด">✕</button>
-      <h3>ล็อกอิน / สมัครสมาชิก</h3>
-      <input id="emailInput" type="email" placeholder="อีเมล" autocomplete="email">
-      <input id="passwordInput" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="current-password">
-      <div class="modal-actions">
-        <button id="emailLoginBtn" class="btn green">ล็อกอิน</button>
-        <button id="signupBtn" class="btn">สมัครสมาชิก</button>
-      </div>
-      <button id="resetBtn" class="link-btn">ลืมรหัสผ่าน?</button>
-      <div class="divider">หรือ</div>
-      <button id="googleBtn" class="btn google">เข้าสู่ระบบด้วย Google</button>
-      <p id="authMessage" class="auth-message"></p>
-    </div>
   </div>
+
 
   <!-- Firebase (เวอร์ชัน compat ใช้ได้กับ <script> ธรรมดา ไม่ต้อง build) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
